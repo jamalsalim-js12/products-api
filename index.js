@@ -1,8 +1,30 @@
 import express from "express";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
 
 const app = express();
 app.use(express.json());
 const PORT = 4000;
+
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Product API",
+      version: "1.0.0",
+      description: "API documentation for managing products",
+    },
+    servers: [
+      {
+        url: "http://localhost:4000",
+      },
+    ],
+  },
+  apis: ["./index.js"], // Update if your routes are in a different file
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const products = [
   {
@@ -69,10 +91,40 @@ const products = [
 
 const generateId = () => `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
+/**
+ * @swagger
+ * /products:
+ *   get:
+ *     summary: Get all products
+ *     responses:
+ *       200:
+ *         description: A list of products
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Product'
+ */
 app.get("/products", (req, res) => {
   res.json(products);
 });
 
+/**
+ * @swagger
+ * /products:
+ *   post:
+ *     summary: Add a new product
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Product'
+ *     responses:
+ *       200:
+ *         description: Product added successfully
+ */
 app.post("/products", (req, res) => {
   const { title, description, category, price, rating, brand, image } =
     req.body;
@@ -93,6 +145,24 @@ app.post("/products", (req, res) => {
   res.json(newProduct);
 });
 
+/**
+ * @swagger
+ * /products/{id}:
+ *   delete:
+ *     summary: Delete a product by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the product to delete
+ *     responses:
+ *       200:
+ *         description: Product deleted successfully
+ *       404:
+ *         description: Product not found
+ */
 app.delete("/products/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const index = products.findIndex((product) => product.id === id);
@@ -111,3 +181,35 @@ app.delete("/products/:id", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Product:
+ *       type: object
+ *       required:
+ *         - title
+ *         - description
+ *         - brand
+ *         - price
+ *         - image
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: Auto-generated ID
+ *         title:
+ *           type: string
+ *         description:
+ *           type: string
+ *         category:
+ *           type: string
+ *         price:
+ *           type: number
+ *         rating:
+ *           type: number
+ *         brand:
+ *           type: string
+ *         image:
+ *           type: string
+ */
