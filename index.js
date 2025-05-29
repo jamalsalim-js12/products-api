@@ -16,7 +16,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:4000",
+        url: "https://btl-products-api.onrender.com/",
       },
     ],
   },
