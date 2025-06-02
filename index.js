@@ -95,7 +95,7 @@ const products = [
   },
 ];
 
-const generateId = () => `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+let nextId = 6;
 
 /**
  * @swagger
@@ -138,7 +138,7 @@ app.post("/products", (req, res) => {
     return res.status(400).json({ error: "All fields are required" });
   }
   const newProduct = {
-    id: generateId(),
+    id: nextId++,
     title,
     description,
     brand,
